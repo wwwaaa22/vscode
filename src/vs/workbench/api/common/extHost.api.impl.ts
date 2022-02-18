@@ -755,7 +755,11 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			getInlineCompletionItemController<T extends vscode.InlineCompletionItem>(provider: vscode.InlineCompletionItemProvider<T>): vscode.InlineCompletionController<T> {
 				checkProposedApiEnabled(extension, 'inlineCompletions');
 				return InlineCompletionController.get(provider);
-			}
+			},
+			registerTextEditorDragAndDropController(selector: vscode.DocumentSelector, provider: vscode.TextEditorDragAndDropController): vscode.Disposable {
+				checkProposedApiEnabled(extension, 'textEditorDragAndDrop');
+				return extHostEditors.registerTextEditorDragAndDropController(extension, checkSelector(selector), provider);
+			},
 		};
 
 		// namespace: workspace
@@ -1312,6 +1316,8 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			WorkspaceTrustState: extHostTypes.WorkspaceTrustState,
 			LanguageStatusSeverity: extHostTypes.LanguageStatusSeverity,
 			QuickPickItemKind: extHostTypes.QuickPickItemKind,
+			TextEditorDataTransfer: extHostTypes.TextEditorDataTransfer,
+			TextEditorDataTransferItem: extHostTypes.TextEditorDataTransferItem,
 		};
 	};
 }

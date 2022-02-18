@@ -3,37 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { mixin } from 'vs/base/common/objects';
-import type * as vscode from 'vscode';
-import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters';
-import { Range, Disposable, CompletionList, SnippetString, CodeActionKind, SymbolInformation, DocumentSymbol, SemanticTokensEdits, SemanticTokens, SemanticTokensEdit, Location } from 'vs/workbench/api/common/extHostTypes';
-import { ISingleEditOperation } from 'vs/editor/common/core/editOperation';
-import * as languages from 'vs/editor/common/languages';
-import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments';
-import { ExtHostCommands, CommandsConverter } from 'vs/workbench/api/common/extHostCommands';
-import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics';
-import * as extHostProtocol from './extHost.protocol';
-import { regExpLeadsToEndlessLoop, regExpFlags } from 'vs/base/common/strings';
-import { IPosition } from 'vs/editor/common/core/position';
-import { IRange, Range as EditorRange } from 'vs/editor/common/core/range';
-import { isFalsyOrEmpty, isNonEmptyArray, coalesce } from 'vs/base/common/arrays';
-import { isArray, isObject } from 'vs/base/common/types';
-import { ISelection, Selection } from 'vs/editor/common/core/selection';
-import { ILogService } from 'vs/platform/log/common/log';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { IURITransformer } from 'vs/base/common/uriIpc';
-import { DisposableStore } from 'vs/base/common/lifecycle';
+import { coalesce, isFalsyOrEmpty, isNonEmptyArray } from 'vs/base/common/arrays';
+import { raceCancellationError } from 'vs/base/common/async';
 import { VSBuffer } from 'vs/base/common/buffer';
-import { encodeSemanticTokensDto } from 'vs/editor/common/services/semanticTokensDto';
-import { IdGenerator } from 'vs/base/common/idGenerator';
-import { IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService';
-import { Cache } from './cache';
-import { StopWatch } from 'vs/base/common/stopwatch';
+import { CancellationToken } from 'vs/base/common/cancellation';
 import { isCancellationError } from 'vs/base/common/errors';
 import { Emitter } from 'vs/base/common/event';
-import { raceCancellationError } from 'vs/base/common/async';
+import { IdGenerator } from 'vs/base/common/idGenerator';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { mixin } from 'vs/base/common/objects';
+import { StopWatch } from 'vs/base/common/stopwatch';
+import { regExpFlags, regExpLeadsToEndlessLoop } from 'vs/base/common/strings';
+import { isArray, isObject } from 'vs/base/common/types';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { IURITransformer } from 'vs/base/common/uriIpc';
+import { ISingleEditOperation } from 'vs/editor/common/core/editOperation';
+import { IPosition } from 'vs/editor/common/core/position';
+import { IRange, Range as EditorRange } from 'vs/editor/common/core/range';
+import { ISelection, Selection } from 'vs/editor/common/core/selection';
+import * as languages from 'vs/editor/common/languages';
+import { encodeSemanticTokensDto } from 'vs/editor/common/services/semanticTokensDto';
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IExtHostApiDeprecationService } from 'vs/workbench/api/common/extHostApiDeprecationService';
+import { CommandsConverter, ExtHostCommands } from 'vs/workbench/api/common/extHostCommands';
+import { ExtHostDiagnostics } from 'vs/workbench/api/common/extHostDiagnostics';
+import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments';
+import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters';
+import { CodeActionKind, CompletionList, Disposable, DocumentSymbol, Location, Range, SemanticTokens, SemanticTokensEdit, SemanticTokensEdits, SnippetString, SymbolInformation } from 'vs/workbench/api/common/extHostTypes';
+import type * as vscode from 'vscode';
+import { Cache } from './cache';
+import * as extHostProtocol from './extHost.protocol';
 
 // --- adapter
 
@@ -1608,6 +1608,7 @@ class TypeHierarchyAdapter {
 		return map?.get(itemId);
 	}
 }
+
 type Adapter = DocumentSymbolAdapter | CodeLensAdapter | DefinitionAdapter | HoverAdapter
 	| DocumentHighlightAdapter | ReferenceAdapter | CodeActionAdapter | DocumentFormattingAdapter
 	| RangeFormattingAdapter | OnTypeFormattingAdapter | NavigateTypeAdapter | RenameAdapter
