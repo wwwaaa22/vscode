@@ -95,7 +95,23 @@ steps:
 
   - script: |
       set -e
+      # Setup node-gyp from source so that native modules will
+      # use correct config.gypi bundled with headers downloaded from
+      # npm_config_disturl, otherwise will default to headers from
+      # process.config.
+      # Remove this once we have node-gyp release with
+      # https://github.com/nodejs/node-gyp/commit/eef4eefccb13ff6a32db862709ee5b2d4edf7e95
+      git clone https://github.com/nodejs/node-gyp $PWD/.build/node-gyp
+      cd $PWD/.build/node-gyp
+      git checkout eef4eefccb13ff6a32db862709ee5b2d4edf7e95
+      npm install
+    displayName: Setup node-gyp
+    condition: and(succeeded(), ne(variables.NODE_MODULES_RESTORED, 'true'))
+
+  - script: |
+      set -e
       export npm_config_arch=$(NPM_ARCH)
+      export npm_config_node_gyp=$PWD/.build/node-gyp/bin/node-gyp.js
 
       if [ -z "$CC" ] || [ -z "$CXX" ]; then
         # Download clang based on chromium revision used by vscode
