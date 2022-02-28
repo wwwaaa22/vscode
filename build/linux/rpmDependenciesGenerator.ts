@@ -15,12 +15,12 @@ export function getRpmDependencies(): string[] {
 	const findResult = spawnSync('find', ['.', '-name', '*.node']);
 	if (findResult.status) {
 		console.error('Error finding files:');
-		console.error(findResult.stderr.toString('utf-8'));
+		console.error(findResult.stderr.toString());
 		return [];
 	}
 
 	// Filter the files and add on the Code binary.
-	const files: string[] = findResult.stdout.toString('utf-8').split('\n').filter((file) => {
+	const files: string[] = findResult.stdout.toString().split('\n').filter((file) => {
 		return !file.includes('obj.target') && file.includes('build/Release');
 	});
 	files.push('.build/electron/code-oss');
