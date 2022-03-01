@@ -87,6 +87,8 @@ export interface ISetting {
 	allKeysAreBoolean?: boolean;
 	editPresentation?: EditPresentationTypes;
 	defaultValueSource?: string | IExtensionInfo;
+	categoryOrder?: number;
+	categoryLabel?: string;
 }
 
 export interface IExtensionSetting extends ISetting {
